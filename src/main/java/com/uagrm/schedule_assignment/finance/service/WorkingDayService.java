@@ -2,6 +2,8 @@ package com.uagrm.schedule_assignment.finance.service;
 
 import com.uagrm.schedule_assignment.finance.dto.WorkingDayRequestDto;
 import com.uagrm.schedule_assignment.finance.dto.WorkingDayResponseDto;
+import com.uagrm.schedule_assignment.finance.entity.Transaction;
+import com.uagrm.schedule_assignment.finance.entity.TransactionType;
 import com.uagrm.schedule_assignment.finance.entity.WorkingDay;
 import com.uagrm.schedule_assignment.finance.mapper.WorkingDayMapper;
 import com.uagrm.schedule_assignment.finance.repository.WorkingDayRepository;
@@ -11,6 +13,10 @@ import com.uagrm.schedule_assignment.security.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -103,5 +109,12 @@ public class WorkingDayService {
             throw new RuntimeException("You do not have permission to delete this record.");
 
         workingDayRepository.deleteById(id);
+    }
+
+    @Transactional
+    public BigDecimal totalDebt() {
+        User userCurrent = userService.getCurrentUser();
+
+        return workingDayRepository.calculateTotalDeb(userCurrent.getId());
     }
 }

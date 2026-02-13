@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/finance/transactions")
 @RequiredArgsConstructor
@@ -39,5 +41,10 @@ public class TransactionController {
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/debt/loan")
+    public BigDecimal totalDebt() {
+        return transactionService.totalDebt();
     }
 }

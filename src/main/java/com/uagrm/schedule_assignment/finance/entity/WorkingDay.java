@@ -2,12 +2,13 @@ package com.uagrm.schedule_assignment.finance.entity;
 
 import com.uagrm.schedule_assignment.security.entity.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Entity
@@ -31,8 +32,6 @@ public class WorkingDay {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "workingDay")
-    private Set<Transaction> transaction = new HashSet<>();
 
     @Column(nullable = false)
     private LocalDate date;
@@ -44,4 +43,16 @@ public class WorkingDay {
     @Column(nullable = false, precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal amountWon = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal paidAmount = BigDecimal.ZERO;
+
+    public boolean isFullyPaid() {
+        return paidAmount.compareTo(amountWon) >= 0;
+    }
+
+    public BigDecimal getRemainingAmount() {
+        return amountWon.subtract(paidAmount);
+    }
 }

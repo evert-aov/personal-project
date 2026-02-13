@@ -26,10 +26,11 @@ public class TransactionMapper {
         return new TransactionResponseDto(
                 transaction.getId(),
                 transaction.getUser().getId(),
-                transaction.getWorkingDay() != null ? transaction.getWorkingDay().getId() : null,
                 transaction.getDescription(),
                 transaction.getType(),
                 transaction.getDate(),
-                transaction.getAmount());
+                transaction.getAmount(),
+                transaction.getPaidAmount()
+        );
     }
 }

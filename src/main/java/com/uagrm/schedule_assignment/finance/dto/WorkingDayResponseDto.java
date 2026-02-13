@@ -10,5 +10,6 @@ public record WorkingDayResponseDto(
         Long userId,
         LocalDate date,
         DayStatus status,
-        BigDecimal amountWon
+        BigDecimal amountWon,
+        BigDecimal paidAmount
 ) {}

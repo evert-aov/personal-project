@@ -8,10 +8,10 @@ import java.time.LocalDate;
 public record TransactionResponseDto (
         Long id,
         Long userId,
-        Long workingDayId,
         String description,
         TransactionType type,
         LocalDate date,
-        BigDecimal amount
+        BigDecimal amount,
+        BigDecimal paidAmount
 ) {
 }

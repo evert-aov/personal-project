@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/finance/client/working-days")
 @RequiredArgsConstructor
@@ -25,7 +27,7 @@ public class ClientWorkingDayController {
         return ResponseEntity.ok(workingDayService.getWorkingDayById(id));
     }
 
-    @GetMapping("/my-working-days")
+    @GetMapping
     public ResponseEntity<Iterable<WorkingDayResponseDto>> myWorkingDays() {
         return ResponseEntity.ok(workingDayService.myWorkingDays());
     }
@@ -39,5 +41,10 @@ public class ClientWorkingDayController {
     public ResponseEntity<Void> deleteWorkingDay(@PathVariable Long id) {
         workingDayService.deleteWorkingDay(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/debt/loan")
+    public BigDecimal totalDebt() {
+        return workingDayService.totalDebt();
     }
 }

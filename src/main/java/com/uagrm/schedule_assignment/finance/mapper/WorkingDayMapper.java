@@ -26,7 +26,8 @@ public class WorkingDayMapper {
                 workingDay.getUser().getId(),
                 workingDay.getDate(),
                 workingDay.getStatus(),
-                workingDay.getAmountWon()
+                workingDay.getAmountWon(),
+                workingDay.getPaidAmount()
         );
     }
 }

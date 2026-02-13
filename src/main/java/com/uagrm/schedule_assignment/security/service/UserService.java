@@ -102,7 +102,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-
     private Integer generateCode() {
         int code;
         do {

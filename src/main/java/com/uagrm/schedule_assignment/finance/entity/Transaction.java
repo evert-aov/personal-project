@@ -22,10 +22,6 @@ public class Transaction {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "working_day_id")
-    private WorkingDay workingDay;
-
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -38,4 +34,13 @@ public class Transaction {
     @Column(nullable = false, precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal amount = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal paidAmount = BigDecimal.ZERO;
+
+    // Ayuda a saber si es una deuda pendiente (solo para LOAN)
+    public BigDecimal getRemainingAmount() {
+        return amount.subtract(paidAmount);
+    }
 }

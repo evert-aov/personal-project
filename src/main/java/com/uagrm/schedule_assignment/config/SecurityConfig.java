@@ -36,6 +36,7 @@ public class SecurityConfig {
                             .requestMatchers(POST, "/api/security/users").permitAll()
                             .requestMatchers("/api/finance/client/**").authenticated()
                             .requestMatchers("/api/finance/transactions/**").authenticated()
+                            .requestMatchers("/api/profile/**").authenticated()
                             .anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session
