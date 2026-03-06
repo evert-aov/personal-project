@@ -14,6 +14,9 @@ public interface WorkingDayRepository extends JpaRepository<WorkingDay, Long> {
     @Query("SELECT w FROM WorkingDay w WHERE w.user.id = :userId AND w.amountWon > w.paidAmount ORDER BY w.date ASC")
     List<WorkingDay> findUnpaidDaysByUserId(Long userId);
 
+    @Query("SELECT w FROM WorkingDay w WHERE w.user.id = :userId ORDER BY w.date DESC")
+    List<WorkingDay> findAllByUserId(Long userId);
+
     @Query("SELECT SUM(w.amountWon - w.paidAmount) FROM WorkingDay w WHERE w.user.id = :userId")
     BigDecimal calculateTotalDeb(Long userId);
 }

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule Assignment API – Documentación</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--purple:#bc8cff;--orange:#ffa657;--text:#e6edf3;--text2:#8b949e;--radius:8px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;}
+  a{color:var(--accent);text-decoration:none;}
+  /* Layout */
+  .layout{display:flex;min-height:100vh;}
+  nav{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;padding:16px 0;}
+  main{flex:1;padding:40px 48px;max-width:900px;}
+  /* Nav */
+  .nav-logo{padding:0 20px 16px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .nav-logo h1{font-size:14px;font-weight:700;color:var(--accent);}
+  .nav-logo p{font-size:11px;color:var(--text2);margin-top:2px;}
+  .nav-section{padding:6px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);margin-top:8px;}
+  nav ul{list-style:none;}
+  nav ul li a{display:block;padding:6px 20px;font-size:13px;color:var(--text2);border-left:2px solid transparent;transition:.15s;}
+  nav ul li a:hover,nav ul li a.active{color:var(--text);border-left-color:var(--accent);background:rgba(88,166,255,.07);}
+  /* Content */
+  .page-header{margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+  .page-header h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .page-header p{color:var(--text2);margin-top:8px;font-size:15px;}
+  h2{font-size:20px;font-weight:600;margin:40px 0 16px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  h2 .badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
+  h3{font-size:15px;font-weight:600;margin:24px 0 10px;color:var(--text);}
+  p{color:var(--text2);font-size:14px;margin-bottom:8px;}
+  /* Module cards */
+  .module{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:32px;overflow:hidden;}
+  .module-header{padding:14px 20px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .module-header h2{margin:0;font-size:16px;}
+  .module-body{padding:0;}
+  /* Accordion */
+  details{border-bottom:1px solid var(--border);}
+  details:last-child{border-bottom:none;}
+  summary{padding:12px 20px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;list-style:none;user-select:none;transition:.15s;}
+  summary:hover{background:rgba(255,255,255,.03);}
+  summary::before{content:'›';font-size:16px;color:var(--text2);transition:.2s;width:14px;}
+  details[open] summary::before{transform:rotate(90deg);}
+  summary .method{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;min-width:50px;text-align:center;}
+  .GET{background:rgba(63,185,80,.15);color:var(--green);}
+  .POST{background:rgba(255,166,87,.15);color:var(--orange);}
+  .PUT{background:rgba(88,166,255,.15);color:var(--accent);}
+  .DELETE{background:rgba(248,81,73,.15);color:var(--red);}
+  summary .path{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);}
+  summary .desc{font-size:12px;color:var(--text2);margin-left:auto;}
+  .endpoint-detail{padding:16px 20px 20px;background:rgba(0,0,0,.2);border-top:1px solid var(--border);}
+  /* Fields table */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;}
+  th{text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border);}
+  td{padding:8px 12px;border-bottom:1px solid rgba(48,54,61,.6);color:var(--text2);}
+  td:first-child{font-family:'JetBrains Mono',monospace;color:var(--text);font-size:12px;}
+  tr:last-child td{border-bottom:none;}
+  .type{color:var(--purple);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  /* Enum tags */
+  .enum-tag{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--yellow);margin:2px;}
+  /* Entity card */
+  .entity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;padding:20px;}
+  .entity-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .entity-card h4{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--accent);}
+  .entity-card .field{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px;}
+  .entity-card .field:last-child{border-bottom:none;}
+  .entity-card .fname{color:var(--text);}
+  .entity-card .ftype{color:var(--purple);font-family:'JetBrains Mono',monospace;}
+  /* Security badge */
+  .lock{font-size:11px;padding:1px 6px;border-radius:4px;background:rgba(248,81,73,.15);color:var(--red);}
+  .open-badge{font-size:11px;padding:1px 6px;border-radius:4px;background:rgba(63,185,80,.15);color:var(--green);}
+  /* Overview cards */
+  .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:32px;}
+  .overview-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
+  .overview-card .num{font-size:28px;font-weight:700;color:var(--accent);}
+  .overview-card .label{font-size:12px;color:var(--text2);margin-top:4px;}
+  /* Section divider */
+  .section-divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface2);padding:1px 5px;border-radius:4px;color:var(--orange);}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="nav-logo">
+    <h1>📋 Schedule Assignment</h1>
+    <p>API Documentation v1.0</p>
+  </div>
+  <div class="nav-section">General</div>
+  <ul>
+    <li><a href="#overview" class="active">Resumen</a></li>
+    <li><a href="#entities">Entidades</a></li>
+    <li><a href="#enums">Enumeraciones</a></li>
+  </ul>
+  <div class="nav-section">Módulos API</div>
+  <ul>
+    <li><a href="#security">🔐 Security</a></li>
+    <li><a href="#academic">🎓 Academic Catalog</a></li>
+    <li><a href="#finance">💰 Finance</a></li>
+  </ul>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>Schedule Assignment API</h1>
+    <p>Documentación técnica completa — controladores, entidades, DTOs y funciones del proyecto Spring Boot.</p>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="overview">
+    <div class="overview-grid">
+      <div class="overview-card"><div class="num">8</div><div class="label">Controladores</div></div>
+      <div class="overview-card"><div class="num">9</div><div class="label">Entidades JPA</div></div>
+      <div class="overview-card"><div class="num">14</div><div class="label">DTOs (Records)</div></div>
+      <div class="overview-card"><div class="num">3</div><div class="label">Módulos</div></div>
+      <div class="overview-card"><div class="num">3</div><div class="label">Enumeraciones</div></div>
+    </div>
+    <p>Base URL: <code>http://localhost:8080</code> &nbsp;·&nbsp; Framework: Spring Boot + Spring Security (JWT) &nbsp;·&nbsp; BD: JPA / Hibernate</p>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ENTITIES -->
+  <div id="entities">
+    <h2>Entidades</h2>
+    <div class="module">
+      <div class="module-header"><h2>academic_catalog</h2></div>
+      <div class="entity-grid">
+        <div class="entity-card">
+          <h4>AcademicPeriod</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">name</span><span class="ftype">String (unique)</span></div>
+          <div class="field"><span class="fname">startDate</span><span class="ftype">LocalDate</span></div>
+          <div class="field"><span class="fname">endDate</span><span class="ftype">LocalDate</span></div>
+        </div>
+        <div class="entity-card">
+          <h4>Classroom</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">name</span><span class="ftype">String (unique, max50)</span></div>
+          <div class="field"><span class="fname">capacity</span><span class="ftype">Integer (default:40)</span></div>
+        </div>
+        <div class="entity-card">
+          <h4>Group</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">name</span><span class="ftype">String (unique, max3)</span></div>
+        </div>
+        <div class="entity-card">
+          <h4>Schedule</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">startTime</span><span class="ftype">LocalTime</span></div>
+          <div class="field"><span class="fname">endTime</span><span class="ftype">LocalTime</span></div>
+        </div>
+        <div class="entity-card">
+          <h4>Subject</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">code</span><span class="ftype">String (unique, max6)</span></div>
+          <div class="field"><span class="fname">name</span><span class="ftype">String (max80)</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="module">
+      <div class="module-header"><h2>finance</h2></div>
+      <div class="entity-grid">
+        <div class="entity-card">
+          <h4>Transaction</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">user</span><span class="ftype">User (ManyToOne)</span></div>
+          <div class="field"><span class="fname">description</span><span class="ftype">String</span></div>
+          <div class="field"><span class="fname">type</span><span class="ftype">TransactionType</span></div>
+          <div class="field"><span class="fname">date</span><span class="ftype">LocalDate</span></div>
+          <div class="field"><span class="fname">amount</span><span class="ftype">BigDecimal</span></div>
+          <div class="field"><span class="fname">paidAmount</span><span class="ftype">BigDecimal</span></div>
+          <div class="field"><span class="fname">getRemainingAmount()</span><span class="ftype">BigDecimal</span></div>
+        </div>
+        <div class="entity-card">
+          <h4>WorkingDay</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">user</span><span class="ftype">User (ManyToOne)</span></div>
+          <div class="field"><span class="fname">date</span><span class="ftype">LocalDate</span></div>
+          <div class="field"><span class="fname">status</span><span class="ftype">DayStatus</span></div>
+          <div class="field"><span class="fname">amountWon</span><span class="ftype">BigDecimal</span></div>
+          <div class="field"><span class="fname">paidAmount</span><span class="ftype">BigDecimal</span></div>
+          <div class="field"><span class="fname">isFullyPaid()</span><span class="ftype">boolean</span></div>
+          <div class="field"><span class="fname">getRemainingAmount()</span><span class="ftype">BigDecimal</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="module">
+      <div class="module-header"><h2>security</h2></div>
+      <div class="entity-grid">
+        <div class="entity-card">
+          <h4>User <small>(implements UserDetails)</small></h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">code</span><span class="ftype">Integer</span></div>
+          <div class="field"><span class="fname">password</span><span class="ftype">String</span></div>
+          <div class="field"><span class="fname">name</span><span class="ftype">String</span></div>
+          <div class="field"><span class="fname">lastName</span><span class="ftype">String</span></div>
+          <div class="field"><span class="fname">email</span><span class="ftype">String</span></div>
+          <div class="field"><span class="fname">isActive</span><span class="ftype">Boolean</span></div>
+          <div class="field"><span class="fname">roles</span><span class="ftype">Set&lt;Role&gt;</span></div>
+          <div class="field"><span class="fname">workingDays</span><span class="ftype">Set&lt;WorkingDay&gt;</span></div>
+          <div class="field"><span class="fname">getAuthorities()</span><span class="ftype">Collection&lt;?&gt;</span></div>
+          <div class="field"><span class="fname">getUsername()</span><span class="ftype">String (= code)</span></div>
+          <div class="field"><span class="fname">isEnabled()</span><span class="ftype">boolean</span></div>
+          <div class="field"><span class="fname">hasRoles(name)</span><span class="ftype">boolean</span></div>
+          <div class="field"><span class="fname">isAdmin()</span><span class="ftype">boolean</span></div>
+        </div>
+        <div class="entity-card">
+          <h4>Role</h4>
+          <div class="field"><span class="fname">id</span><span class="ftype">Long (PK)</span></div>
+          <div class="field"><span class="fname">name</span><span class="ftype">String</span></div>
+          <div class="field"><span class="fname">description</span><span class="ftype">String</span></div>
+          <div class="field"><span class="fname">level</span><span class="ftype">Integer</span></div>
+          <div class="field"><span class="fname">isActive</span><span class="ftype">Boolean</span></div>
+          <div class="field"><span class="fname">users</span><span class="ftype">Set&lt;User&gt;</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ENUMS -->
+  <div id="enums">
+    <h2>Enumeraciones</h2>
+    <table>
+      <tr><th>Enum</th><th>Módulo</th><th>Valores</th></tr>
+      <tr><td>DayOfWeek</td><td>academic_catalog</td><td><span class="enum-tag">MONDAY</span><span class="enum-tag">TUESDAY</span><span class="enum-tag">WEDNESDAY</span><span class="enum-tag">THURSDAY</span><span class="enum-tag">FRIDAY</span><span class="enum-tag">SATURDAY</span><span class="enum-tag">SUNDAY</span></td></tr>
+      <tr><td>DayStatus</td><td>finance</td><td><span class="enum-tag">FULL_DAY</span><span class="enum-tag">HALF_DAY</span><span class="enum-tag">NO_DAY</span></td></tr>
+      <tr><td>TransactionType</td><td>finance</td><td><span class="enum-tag">LOAN</span><span class="enum-tag">RECEIVED</span><span class="enum-tag">EXPENSE</span><span class="enum-tag">INCOME</span></td></tr>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- SECURITY MODULE -->
+  <div id="security">
+    <h2>🔐 Módulo Security</h2>
+
+    <div class="module">
+      <div class="module-header"><h2>AuthController &nbsp;<span class="open-badge">público</span></h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/security/auth</span></div>
+      <div class="module-body">
+        <details>
+          <summary><span class="method POST">POST</span><span class="path">/login</span><span class="desc">Iniciar sesión</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>LoginRequestDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>username</td><td class="type">String</td></tr><tr><td>password</td><td class="type">String</td></tr></table>
+            <h3>Response — <code>AuthResponseDto</code></h3>
+            <p>Retorna accessToken y refreshToken (JWT).</p>
+          </div>
+        </details>
+        <details>
+          <summary><span class="method POST">POST</span><span class="path">/refresh</span><span class="desc">Renovar token</span></summary>
+          <div class="endpoint-detail"><p>Header: <code>Authorization: Bearer &lt;refreshToken&gt;</code>. Retorna nuevo <code>AuthResponseDto</code>.</p></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-header"><h2>UserController &nbsp;<span class="lock">ADMIN</span></h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/security/users</span></div>
+      <div class="module-body">
+        <details>
+          <summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Crear usuario</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>UserCreateDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>code</td><td class="type">Integer</td></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>lastName</td><td class="type">String</td></tr><tr><td>email</td><td class="type">String</td></tr><tr><td>password</td><td class="type">String</td></tr></table>
+            <h3>Response 201 — <code>UserResponseDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>id</td><td class="type">Long</td></tr><tr><td>code</td><td class="type">Integer</td></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>lastName</td><td class="type">String</td></tr><tr><td>email</td><td class="type">String</td></tr><tr><td>roles</td><td class="type">List&lt;RoleResponseDto&gt;</td></tr></table>
+          </div>
+        </details>
+        <details>
+          <summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Listar todos los usuarios</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>Iterable&lt;UserResponseDto&gt;</code>.</p></div>
+        </details>
+        <details>
+          <summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener usuario por ID</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>UserResponseDto</code>.</p></div>
+        </details>
+        <details>
+          <summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar usuario</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>UserUpdateDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>lastName</td><td class="type">String</td></tr><tr><td>email</td><td class="type">String</td></tr><tr><td>isActive</td><td class="type">Boolean</td></tr></table>
+          </div>
+        </details>
+        <details>
+          <summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar usuario</span></summary>
+          <div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-header"><h2>ProfileController &nbsp;<span class="lock">autenticado</span></h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/profile</span></div>
+      <div class="module-body">
+        <details>
+          <summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Ver mi perfil</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>UserResponseDto</code> del usuario autenticado.</p></div>
+        </details>
+        <details>
+          <summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Actualizar mi perfil</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>ProfileUpdateDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>lastName</td><td class="type">String</td></tr><tr><td>email</td><td class="type">String</td></tr></table>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ACADEMIC MODULE -->
+  <div id="academic">
+    <h2>🎓 Módulo Academic Catalog</h2>
+
+    <!-- AcademicPeriod -->
+    <div class="module">
+      <div class="module-header"><h2>AcademicPeriodController</h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/academic-periods</span></div>
+      <div class="module-body">
+        <details><summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Crear período académico</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>AcademicPeriodRequestDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>startDate</td><td class="type">LocalDate</td></tr><tr><td>endDate</td><td class="type">LocalDate</td></tr></table>
+            <h3>Response 201 — <code>AcademicPeriodResponseDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>id</td><td class="type">Long</td></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>startDate</td><td class="type">LocalDate</td></tr><tr><td>endDate</td><td class="type">LocalDate</td></tr></table>
+          </div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Listar todos</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>Iterable&lt;AcademicPeriodResponseDto&gt;</code>.</p></div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener por ID</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>AcademicPeriodResponseDto</code>. Lanza excepción si no existe.</p></div>
+        </details>
+        <details><summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar período</span></summary>
+          <div class="endpoint-detail"><p>Body: <code>AcademicPeriodRequestDto</code>. Actualiza name, startDate, endDate.</p></div>
+        </details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar período</span></summary>
+          <div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Classroom -->
+    <div class="module">
+      <div class="module-header"><h2>ClassroomController</h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/classrooms</span></div>
+      <div class="module-body">
+        <details><summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Crear aula</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>ClassroomRequestDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>capacity</td><td class="type">Integer</td></tr></table>
+            <h3>Response 201 — <code>ClassroomResponseDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>id</td><td class="type">Long</td></tr><tr><td>name</td><td class="type">String</td></tr><tr><td>capacity</td><td class="type">Integer</td></tr></table>
+          </div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Listar todas las aulas</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>Iterable&lt;ClassroomResponseDto&gt;</code>.</p></div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener aula por ID</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>ClassroomResponseDto</code>.</p></div>
+        </details>
+        <details><summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar aula</span></summary>
+          <div class="endpoint-detail"><p>Solo actualiza el campo <code>name</code>.</p></div>
+        </details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar aula</span></summary>
+          <div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Group -->
+    <div class="module">
+      <div class="module-header"><h2>GroupController</h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/groups</span></div>
+      <div class="module-body">
+        <details><summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Crear grupo</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request / Response</h3>
+            <table><tr><th>Campo</th><th>Tipo</th><th>Notas</th></tr><tr><td>name</td><td class="type">String</td><td>Se guarda en MAYÚSCULAS (max 3 chars)</td></tr></table>
+          </div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Listar todos</span></summary><div class="endpoint-detail"><p>Retorna <code>Iterable&lt;GroupResponseDto&gt;</code>.</p></div></details>
+        <details><summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener por ID</span></summary><div class="endpoint-detail"><p>Retorna <code>GroupResponseDto</code>.</p></div></details>
+        <details><summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar grupo</span></summary><div class="endpoint-detail"><p>Actualiza el campo <code>name</code>.</p></div></details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar grupo</span></summary><div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div></details>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="module">
+      <div class="module-header"><h2>ScheduleController</h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/schedules</span></div>
+      <div class="module-body">
+        <details><summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Crear horario</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>ScheduleRequestDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>startTime</td><td class="type">LocalTime</td></tr><tr><td>endTime</td><td class="type">LocalTime</td></tr></table>
+            <h3>Response 201 — <code>ScheduleResponseDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>id</td><td class="type">Long</td></tr><tr><td>startTime</td><td class="type">LocalTime</td></tr><tr><td>endTime</td><td class="type">LocalTime</td></tr></table>
+          </div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Listar todos</span></summary><div class="endpoint-detail"><p>Retorna <code>Iterable&lt;ScheduleResponseDto&gt;</code>.</p></div></details>
+        <details><summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener por ID</span></summary><div class="endpoint-detail"><p>Retorna <code>ScheduleResponseDto</code>.</p></div></details>
+        <details><summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar horario</span></summary><div class="endpoint-detail"><p>Body: <code>ScheduleRequestDto</code>. Actualiza startTime y endTime.</p></div></details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar horario</span></summary><div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div></details>
+      </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="module">
+      <div class="module-header"><h2>SubjectController</h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/subjects</span></div>
+      <div class="module-body">
+        <details><summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Crear materia</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>SubjectRequestDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>code</td><td class="type">String (max6, unique)</td></tr><tr><td>name</td><td class="type">String (max80)</td></tr></table>
+            <p style="margin-top:8px;">Los campos se guardan en MAYÚSCULAS automáticamente.</p>
+          </div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Listar todas</span></summary><div class="endpoint-detail"><p>Retorna <code>Iterable&lt;SubjectResponseDto&gt;</code>.</p></div></details>
+        <details><summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener por ID</span></summary><div class="endpoint-detail"><p>Retorna <code>SubjectResponseDto</code>.</p></div></details>
+        <details><summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar materia</span></summary><div class="endpoint-detail"><p>Solo actualiza el campo <code>name</code>.</p></div></details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar materia</span></summary><div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div></details>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- FINANCE MODULE -->
+  <div id="finance">
+    <h2>💰 Módulo Finance</h2>
+
+    <!-- WorkingDay Admin -->
+    <div class="module">
+      <div class="module-header"><h2>AdminWorkingDayController &nbsp;<span class="lock">ADMIN</span></h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/finance/admin/working-days</span></div>
+      <div class="module-body">
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Listar todos los días</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>Iterable&lt;WorkingDayResponseDto&gt;</code> de todos los usuarios.</p></div>
+        </details>
+        <details><summary><span class="method POST">POST</span><span class="path">/user/{userId}</span><span class="desc">Crear día para un usuario</span></summary>
+          <div class="endpoint-detail">
+            <h3>Path Variable: <code>userId</code> — Long</h3>
+            <h3>Request Body — <code>WorkingDayRequestDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>date</td><td class="type">LocalDate</td></tr><tr><td>status</td><td class="type">DayStatus</td></tr><tr><td>amountWon</td><td class="type">BigDecimal</td></tr></table>
+          </div>
+        </details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar cualquier día</span></summary>
+          <div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div>
+        </details>
+      </div>
+    </div>
+
+    <!-- WorkingDay Client -->
+    <div class="module">
+      <div class="module-header"><h2>ClientWorkingDayController &nbsp;<span class="lock">autenticado</span></h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/finance/client/working-days</span></div>
+      <div class="module-body">
+        <details><summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Registrar mi día laboral</span></summary>
+          <div class="endpoint-detail"><p>Body: <code>WorkingDayRequestDto</code>. Crea para el usuario autenticado.</p></div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Mis días laborales</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>Iterable&lt;WorkingDayResponseDto&gt;</code> del usuario autenticado.</p>
+            <h3>Response — <code>WorkingDayResponseDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>id</td><td class="type">Long</td></tr><tr><td>userId</td><td class="type">Long</td></tr><tr><td>date</td><td class="type">LocalDate</td></tr><tr><td>status</td><td class="type">DayStatus</td></tr><tr><td>amountWon</td><td class="type">BigDecimal</td></tr><tr><td>paidAmount</td><td class="type">BigDecimal</td></tr></table>
+          </div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener día por ID</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>WorkingDayResponseDto</code>.</p></div>
+        </details>
+        <details><summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar día laboral</span></summary>
+          <div class="endpoint-detail"><p>Body: <code>WorkingDayRequestDto</code>.</p></div>
+        </details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar mi día</span></summary>
+          <div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/debt/loan</span><span class="desc">Total deuda pendiente</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>BigDecimal</code> con la suma total de días no pagados.</p></div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="module">
+      <div class="module-header"><h2>TransactionController &nbsp;<span class="lock">autenticado</span></h2><span style="color:var(--text2);font-size:12px;margin-left:auto;">Base: /api/finance/transactions</span></div>
+      <div class="module-body">
+        <details><summary><span class="method POST">POST</span><span class="path">/</span><span class="desc">Agregar transacción</span></summary>
+          <div class="endpoint-detail">
+            <h3>Request Body — <code>TransactionRequestDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>description</td><td class="type">String</td></tr><tr><td>date</td><td class="type">LocalDate</td></tr><tr><td>type</td><td class="type">TransactionType</td></tr><tr><td>amount</td><td class="type">BigDecimal</td></tr></table>
+            <h3>Response 201 — <code>TransactionResponseDto</code></h3>
+            <table><tr><th>Campo</th><th>Tipo</th></tr><tr><td>id</td><td class="type">Long</td></tr><tr><td>userId</td><td class="type">Long</td></tr><tr><td>description</td><td class="type">String</td></tr><tr><td>type</td><td class="type">TransactionType</td></tr><tr><td>date</td><td class="type">LocalDate</td></tr><tr><td>amount</td><td class="type">BigDecimal</td></tr><tr><td>paidAmount</td><td class="type">BigDecimal</td></tr></table>
+          </div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/</span><span class="desc">Mis transacciones</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>Iterable&lt;TransactionResponseDto&gt;</code> del usuario autenticado.</p></div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Obtener transacción por ID</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>TransactionResponseDto</code>.</p></div>
+        </details>
+        <details><summary><span class="method PUT">PUT</span><span class="path">/{id}</span><span class="desc">Actualizar transacción</span></summary>
+          <div class="endpoint-detail"><p>Body: <code>TransactionRequestDto</code>.</p></div>
+        </details>
+        <details><summary><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Eliminar transacción</span></summary>
+          <div class="endpoint-detail"><p>Respuesta: <code>204 No Content</code>.</p></div>
+        </details>
+        <details><summary><span class="method GET">GET</span><span class="path">/debt/loan</span><span class="desc">Total deuda de préstamos</span></summary>
+          <div class="endpoint-detail"><p>Retorna <code>BigDecimal</code> — suma de transacciones tipo LOAN pendientes de pago.</p></div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+  <p style="text-align:center;color:var(--text2);font-size:12px;">Schedule Assignment API · Generado automáticamente · 2026</p>
+</main>
+</div>
+
+<script>
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+    links.forEach(l => {
+      l.classList.remove('active');
+      if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

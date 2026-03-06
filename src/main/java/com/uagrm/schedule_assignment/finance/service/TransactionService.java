@@ -106,13 +106,17 @@ public class TransactionService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public TransactionResponseDto getMyTransactionById(Long id) {
         User userCurrent = userService.getCurrentUser();
-        return transactionRepository.findById(id)
-                .filter(transaction -> transaction.getUser().getId().equals(userCurrent.getId()))
-                .map(transactionMapper::toDto)
+
+        Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        if (!transaction.getUser().getId().equals(userCurrent.getId()))
+            throw new RuntimeException("You do not have permission to view this record.");
+
+        return transactionMapper.toDto(transaction);
     }
 
     @Transactional

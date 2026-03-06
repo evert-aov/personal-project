@@ -1,6 +1,7 @@
 package com.uagrm.schedule_assignment.security.dto;
 
-public record AuthResponseDto(
+public record
+AuthResponseDto(
         String token,
         String refreshToken
 ) {

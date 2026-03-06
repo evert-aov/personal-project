@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class WorkingDayMapper {
 
     public WorkingDay toEntity(WorkingDayRequestDto request) {

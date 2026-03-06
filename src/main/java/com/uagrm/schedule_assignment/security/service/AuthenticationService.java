@@ -10,6 +10,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio encargado de la autenticación de usuarios y gestión de tokens JWT.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -18,6 +21,13 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final AuthResponseMapper authResponseMapper;
 
+    /**
+     * Autentica a un usuario y genera un par de tokens (Acceso y Refresh).
+     *
+     * @param request Datos de inicio de sesión (código y contraseña).
+     * @return AuthResponseDto conteniendo el token de acceso y el refresh token.
+     * @throws UsernameNotFoundException Si el usuario no existe.
+     */
     public AuthResponseDto login(LoginRequestDto request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -33,6 +43,13 @@ public class AuthenticationService {
         return authResponseMapper.toDto(jwtToken, tokenRefresh);
     }
 
+    /**
+     * Genera un nuevo token de acceso a partir de un refresh token válido.
+     *
+     * @param refreshToken El token de actualización proporcionado por el usuario.
+     * @return AuthResponseDto con el nuevo token de acceso y el mismo refresh token.
+     * @throws RuntimeException Si el usuario no es encontrado o el token es inválido.
+     */
     public AuthResponseDto refreshToken(String refreshToken) {
         Integer username = Integer.valueOf(jwtService.extractUsername(refreshToken));
         var user = userRepository.findByCode(username)

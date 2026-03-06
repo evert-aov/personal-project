@@ -2,17 +2,15 @@ package com.uagrm.schedule_assignment.finance.service;
 
 import com.uagrm.schedule_assignment.finance.dto.WorkingDayRequestDto;
 import com.uagrm.schedule_assignment.finance.dto.WorkingDayResponseDto;
-import com.uagrm.schedule_assignment.finance.entity.Transaction;
-import com.uagrm.schedule_assignment.finance.entity.TransactionType;
 import com.uagrm.schedule_assignment.finance.entity.WorkingDay;
 import com.uagrm.schedule_assignment.finance.mapper.WorkingDayMapper;
 import com.uagrm.schedule_assignment.finance.repository.WorkingDayRepository;
 import com.uagrm.schedule_assignment.security.entity.User;
 import com.uagrm.schedule_assignment.security.repository.UserRepository;
 import com.uagrm.schedule_assignment.security.service.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,12 +58,14 @@ public class WorkingDayService {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Iterable<WorkingDayResponseDto> myWorkingDays() {
         User userCurrent = userService.getCurrentUser();
-        return workingDayRepository.findAll().stream()
-                .filter(workingDay -> workingDay.getUser().getId().equals(userCurrent.getId()))
-                .map(workingDayMapper::toDto).toList();
+
+        return workingDayRepository.findAllByUserId(userCurrent.getId())
+                .stream()
+                .map(workingDayMapper::toDto)
+                .toList();
     }
 
 
@@ -80,7 +80,7 @@ public class WorkingDayService {
         return workingDayMapper.toDto(workingDayRepository.save(workingDay));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public WorkingDayResponseDto getWorkingDayById(Long id) {
         User userCurrent = userService.getCurrentUser();
         WorkingDay workingDay = workingDayRepository
@@ -94,7 +94,7 @@ public class WorkingDayService {
         return workingDayMapper.toDto(workingDay);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Iterable<WorkingDayResponseDto> getAllWorkingDays() {
         return workingDayRepository.findAll().stream().map(workingDayMapper::toDto).toList();
     }

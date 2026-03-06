@@ -54,7 +54,7 @@ public class UserService {
         return userMapper.toDto(userRepository.save(user));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserResponseDto getUserById(Long id) {
         return userMapper.toDto(
                 userRepository
