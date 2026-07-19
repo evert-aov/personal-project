@@ -34,11 +34,11 @@ Una vez iniciada la aplicación, la documentación de la API está disponible en
 - **OpenAPI Docs**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 ## Estructura del Proyecto
-- `com.uagrm.schedule_assignment.academic_catalog`: Gestión académica.
-- `com.uagrm.schedule_assignment.finance`: Gestión financiera.
-- `com.uagrm.schedule_assignment.note`: Notas y pizarras.
-- `com.uagrm.schedule_assignment.security`: Seguridad, usuarios y roles.
-- `com.uagrm.schedule_assignment.config`: Configuraciones generales.
+- `com.uagrm.personal.academic_catalog`: Gestión académica.
+- `com.uagrm.personal.finance`: Gestión financiera.
+- `com.uagrm.personal.note`: Notas y pizarras.
+- `com.uagrm.personal.security`: Seguridad, usuarios y roles.
+- `com.uagrm.personal.config`: Configuraciones generales.
 
 ## Licencia
 Propiedad de la UAGRM - Proyecto Personal.
