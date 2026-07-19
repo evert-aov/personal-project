@@ -1,0 +1,44 @@
+# Copy gradle executable and configuration to cache dependencies first
+COPY gradle/ gradle/
+COPY gradlew settings.gradle build.gradle env.gradle ./
+RUN chmod +x gradlew && ./gradlew --no-daemon dependencies
+
+# Copy source and build the JAR
+COPY src ./src
+RUN ./gradlew bootJar --no-daemon -x test
+
+# Stage 2: Extract layers from the JAR
+FROM eclipse-temurin:25-jre-alpine AS layers
+WORKDIR /extract
+COPY --from=builder /build/build/libs/*.jar app.jar
+RUN java -Djarmode=layertools -jar app.jar extract
+
+# Stage 3: Professional runtime image
+FROM eclipse-temurin:25-jre-alpine
+WORKDIR /app
+
+# Non-root user for security
+RUN addgroup -S spring && adduser -S spring -G spring
+
+# Instalar dependencias para scripts de backup
+RUN apk add --no-cache postgresql-client bash curl
+
+# Copiar scripts
+COPY --chown=spring:spring scripts/ /app/scripts/
+RUN chmod -R +x /app/scripts
+
+# Copy layers from the stages above with correct ownership
+COPY --from=layers --chown=spring:spring /extract/dependencies/ ./
+COPY --from=layers --chown=spring:spring /extract/spring-boot-loader/ ./
+COPY --from=layers --chown=spring:spring /extract/snapshot-dependencies/ ./
+COPY --from=layers --chown=spring:spring /extract/application/ ./
+
+RUN mkdir -p /backups/logs && chown -R spring:spring /backups
+
+USER spring
+
+# Configuración de memoria adaptada para Cloud Run
+ENV JAVA_OPTS="-XX:+UseParallelGC -Xms256m -Xmx512m -XX:MaxRAMPercentage=75.0 -Duser.timezone=America/La_Paz -Djava.net.preferIPv4Stack=true"
+
+# Variable $PORT que inyecta Google
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -Dserver.port=${PORT:-8080} org.springframework.boot.loader.launch.JarLauncher"]
