@@ -1,8 +1,8 @@
-package com.uagrm.schedule_assignment.note.mapper;
+package com.uagrm.personal.note.mapper;
 
-import com.uagrm.schedule_assignment.note.dto.WhiteboardRequestDto;
-import com.uagrm.schedule_assignment.note.dto.WhiteboardResponseDto;
-import com.uagrm.schedule_assignment.note.entity.Whiteboard;
+import com.uagrm.personal.note.dto.WhiteboardRequestDto;
+import com.uagrm.personal.note.dto.WhiteboardResponseDto;
+import com.uagrm.personal.note.entity.Whiteboard;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

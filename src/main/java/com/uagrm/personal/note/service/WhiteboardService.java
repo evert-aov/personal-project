@@ -1,12 +1,12 @@
-package com.uagrm.schedule_assignment.note.service;
+package com.uagrm.personal.note.service;
 
-import com.uagrm.schedule_assignment.note.dto.WhiteboardRequestDto;
-import com.uagrm.schedule_assignment.note.dto.WhiteboardResponseDto;
-import com.uagrm.schedule_assignment.note.entity.Whiteboard;
-import com.uagrm.schedule_assignment.note.mapper.WhiteboardMapper;
-import com.uagrm.schedule_assignment.note.repository.WhiteboardRepository;
-import com.uagrm.schedule_assignment.security.entity.User;
-import com.uagrm.schedule_assignment.security.service.UserService;
+import com.uagrm.personal.note.dto.WhiteboardRequestDto;
+import com.uagrm.personal.note.dto.WhiteboardResponseDto;
+import com.uagrm.personal.note.entity.Whiteboard;
+import com.uagrm.personal.note.mapper.WhiteboardMapper;
+import com.uagrm.personal.note.repository.WhiteboardRepository;
+import com.uagrm.personal.security.entity.User;
+import com.uagrm.personal.security.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,6 @@ public class WhiteboardService {
 
     @Transactional(readOnly = true)
     public WhiteboardResponseDto getWhiteboardById(Long id) {
-
         User userCurrent = userService.getCurrentUser();
         Whiteboard whiteboard = whiteboardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Whiteboard not found"));
@@ -60,7 +59,6 @@ public class WhiteboardService {
 
         if (!isAdmin && !whiteboard.getUser().getId().equals(userCurrent.getId()))
             throw new RuntimeException("You do not have permission to update this record.");
-
 
         whiteboard.setTitle(requestDto.title());
         whiteboard.setPreview_image_url(requestDto.preview_image_url());

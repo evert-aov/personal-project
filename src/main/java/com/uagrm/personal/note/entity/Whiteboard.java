@@ -1,6 +1,6 @@
-package com.uagrm.schedule_assignment.note.entity;
+package com.uagrm.personal.note.entity;
 
-import com.uagrm.schedule_assignment.security.entity.User;
+import com.uagrm.personal.security.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,5 +28,6 @@ public class Whiteboard {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(columnDefinition = "TEXT")
     private String preview_image_url;
 }

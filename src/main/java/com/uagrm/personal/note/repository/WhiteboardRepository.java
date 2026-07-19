@@ -1,6 +1,6 @@
-package com.uagrm.schedule_assignment.note.repository;
+package com.uagrm.personal.note.repository;
 
-import com.uagrm.schedule_assignment.note.entity.Whiteboard;
+import com.uagrm.personal.note.entity.Whiteboard;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

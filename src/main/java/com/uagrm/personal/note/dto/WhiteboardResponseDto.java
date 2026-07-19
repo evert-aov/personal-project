@@ -1,4 +1,4 @@
-package com.uagrm.schedule_assignment.note.dto;
+package com.uagrm.personal.note.dto;
 
 public record WhiteboardResponseDto(
         Long id,

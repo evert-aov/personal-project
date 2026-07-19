@@ -1,8 +1,8 @@
-package com.uagrm.schedule_assignment.note.controller;
+package com.uagrm.personal.note.controller;
 
-import com.uagrm.schedule_assignment.note.dto.WhiteboardRequestDto;
-import com.uagrm.schedule_assignment.note.dto.WhiteboardResponseDto;
-import com.uagrm.schedule_assignment.note.service.WhiteboardService;
+import com.uagrm.personal.note.dto.WhiteboardRequestDto;
+import com.uagrm.personal.note.dto.WhiteboardResponseDto;
+import com.uagrm.personal.note.service.WhiteboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
