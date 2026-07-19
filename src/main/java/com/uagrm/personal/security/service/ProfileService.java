@@ -1,8 +1,8 @@
-package com.uagrm.schedule_assignment.security.service;
+package com.uagrm.personal.security.service;
 
-import com.uagrm.schedule_assignment.security.dto.ProfileUpdateDto;
-import com.uagrm.schedule_assignment.security.dto.UserResponseDto;
-import com.uagrm.schedule_assignment.security.entity.User;
+import com.uagrm.personal.security.dto.ProfileUpdateDto;
+import com.uagrm.personal.security.dto.UserResponseDto;
+import com.uagrm.personal.security.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

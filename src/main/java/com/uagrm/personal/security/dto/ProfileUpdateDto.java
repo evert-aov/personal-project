@@ -1,4 +1,4 @@
-package com.uagrm.schedule_assignment.security.dto;
+package com.uagrm.personal.security.dto;
 
 public record ProfileUpdateDto(
         String name,

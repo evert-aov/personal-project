@@ -1,8 +1,8 @@
-package com.uagrm.schedule_assignment.security.controller;
+package com.uagrm.personal.security.controller;
 
-import com.uagrm.schedule_assignment.security.dto.ProfileUpdateDto;
-import com.uagrm.schedule_assignment.security.dto.UserResponseDto;
-import com.uagrm.schedule_assignment.security.service.ProfileService;
+import com.uagrm.personal.security.dto.ProfileUpdateDto;
+import com.uagrm.personal.security.dto.UserResponseDto;
+import com.uagrm.personal.security.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
