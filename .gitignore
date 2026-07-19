@@ -39,4 +39,5 @@ out/
 ### Environment Configuration ###
 .env
 !.env.example
+storage/
 
