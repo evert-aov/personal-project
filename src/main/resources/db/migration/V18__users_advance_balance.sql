@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN advance_balance NUMERIC(10, 2) NOT NULL DEFAULT 0;
