@@ -1,7 +1,11 @@
+# Stage 1: Build stage
+FROM eclipse-temurin:25-jdk-alpine AS builder
+WORKDIR /build
+
 # Copy gradle executable and configuration to cache dependencies first
 COPY gradle/ gradle/
-COPY gradlew settings.gradle build.gradle env.gradle ./
-RUN chmod +x gradlew && ./gradlew --no-daemon dependencies
+COPY gradlew settings.gradle build.gradle ./
+RUN chmod +x gradlew && ./gradlew --no-daemon dependencies || true
 
 # Copy source and build the JAR
 COPY src ./src
@@ -20,12 +24,8 @@ WORKDIR /app
 # Non-root user for security
 RUN addgroup -S spring && adduser -S spring -G spring
 
-# Instalar dependencias para scripts de backup
+# Instalar dependencias necesarias
 RUN apk add --no-cache postgresql-client bash curl
-
-# Copiar scripts
-COPY --chown=spring:spring scripts/ /app/scripts/
-RUN chmod -R +x /app/scripts
 
 # Copy layers from the stages above with correct ownership
 COPY --from=layers --chown=spring:spring /extract/dependencies/ ./
@@ -37,8 +37,8 @@ RUN mkdir -p /backups/logs && chown -R spring:spring /backups
 
 USER spring
 
-# Configuración de memoria adaptada para Cloud Run
+# Configuración de memoria adaptada para Cloud Run / Railway / Render
 ENV JAVA_OPTS="-XX:+UseParallelGC -Xms256m -Xmx512m -XX:MaxRAMPercentage=75.0 -Duser.timezone=America/La_Paz -Djava.net.preferIPv4Stack=true"
 
-# Variable $PORT que inyecta Google
+# Variable $PORT que inyecta la plataforma en la nube
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -Dserver.port=${PORT:-8080} org.springframework.boot.loader.launch.JarLauncher"]
