@@ -1,8 +1,8 @@
-package com.uagrm.schedule_assignment.finance.controller;
+package com.uagrm.personal.finance.controller;
 
-import com.uagrm.schedule_assignment.finance.dto.TransactionRequestDto;
-import com.uagrm.schedule_assignment.finance.dto.TransactionResponseDto;
-import com.uagrm.schedule_assignment.finance.service.TransactionService;
+import com.uagrm.personal.finance.dto.TransactionRequestDto;
+import com.uagrm.personal.finance.dto.TransactionResponseDto;
+import com.uagrm.personal.finance.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

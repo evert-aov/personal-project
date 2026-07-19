@@ -1,6 +1,6 @@
-package com.uagrm.schedule_assignment.finance.entity;
+package com.uagrm.personal.finance.entity;
 
-import com.uagrm.schedule_assignment.security.entity.User;
+import com.uagrm.personal.security.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

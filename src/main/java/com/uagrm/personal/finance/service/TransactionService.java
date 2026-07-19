@@ -1,15 +1,17 @@
-package com.uagrm.schedule_assignment.finance.service;
+package com.uagrm.personal.finance.service;
 
-import com.uagrm.schedule_assignment.finance.dto.TransactionRequestDto;
-import com.uagrm.schedule_assignment.finance.dto.TransactionResponseDto;
-import com.uagrm.schedule_assignment.finance.entity.Transaction;
-import com.uagrm.schedule_assignment.finance.entity.TransactionType;
-import com.uagrm.schedule_assignment.finance.entity.WorkingDay;
-import com.uagrm.schedule_assignment.finance.mapper.TransactionMapper;
-import com.uagrm.schedule_assignment.finance.repository.TransactionRepository;
-import com.uagrm.schedule_assignment.finance.repository.WorkingDayRepository;
-import com.uagrm.schedule_assignment.security.entity.User;
-import com.uagrm.schedule_assignment.security.service.UserService;
+import com.uagrm.personal.finance.dto.TransactionRequestDto;
+import com.uagrm.personal.finance.dto.TransactionResponseDto;
+import com.uagrm.personal.finance.dto.UserTransactionSummaryDto;
+import com.uagrm.personal.finance.entity.Transaction;
+import com.uagrm.personal.finance.entity.TransactionType;
+import com.uagrm.personal.finance.entity.WorkingDay;
+import com.uagrm.personal.finance.mapper.TransactionMapper;
+import com.uagrm.personal.finance.repository.TransactionRepository;
+import com.uagrm.personal.finance.repository.WorkingDayRepository;
+import com.uagrm.personal.security.entity.User;
+import com.uagrm.personal.security.repository.UserRepository;
+import com.uagrm.personal.security.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,19 +27,32 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final WorkingDayRepository workingDayRepository;
     private final TransactionMapper transactionMapper;
+    private final UserRepository userRepository;
+    private final AdvanceBalanceService advanceBalanceService;
 
     @Transactional
     public TransactionResponseDto addMyTransaction(TransactionRequestDto requestDto) {
         User userCurrent = userService.getCurrentUser();
 
-
         Transaction transaction = transactionMapper.toEntity(requestDto);
         transaction.setUser(userCurrent);
 
-        if (transaction.getType() == TransactionType.RECEIVED)
-            distributePayment(userCurrent, transaction.getAmount());
+        applyTypeSideEffects(userCurrent, transaction);
 
         return transactionMapper.toDto(transactionRepository.save(transaction));
+    }
+
+    /**
+     * PAYMENT settles old debts (working days / loans) oldest-first and banks any leftover
+     * as advance credit; a new LOAN immediately drains whatever credit is already available.
+     */
+    private void applyTypeSideEffects(User user, Transaction transaction) {
+        if (transaction.getType() == TransactionType.PAYMENT) {
+            distributePayment(user, transaction.getAmount());
+        } else if (transaction.getType() == TransactionType.LOAN) {
+            BigDecimal applied = advanceBalanceService.applyAvailableCredit(user, transaction.getAmount());
+            transaction.setPaidAmount(applied);
+        }
     }
 
     /**
@@ -95,6 +110,9 @@ public class TransactionService {
                 transactionRepository.save(loan);
             }
         }
+
+        if (remainingMoney.compareTo(BigDecimal.ZERO) > 0)
+            advanceBalanceService.addCredit(user, remainingMoney);
     }
 
     @Transactional(readOnly = true)
@@ -157,5 +175,31 @@ public class TransactionService {
         User userCurrent = userService.getCurrentUser();
 
         return transactionRepository.calculateTotalDeb(userCurrent.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Iterable<UserTransactionSummaryDto> getUserSummaries() {
+        return transactionRepository.findUserSummaries();
+    }
+
+    @Transactional(readOnly = true)
+    public Iterable<TransactionResponseDto> getPaymentsAndLoansByUser(Long userId) {
+        return transactionRepository.findPaymentsAndLoansByUserId(userId)
+                .stream()
+                .map(transactionMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public TransactionResponseDto createForUser(Long userId, TransactionRequestDto requestDto) {
+        User userTarget = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Transaction transaction = transactionMapper.toEntity(requestDto);
+        transaction.setUser(userTarget);
+
+        applyTypeSideEffects(userTarget, transaction);
+
+        return transactionMapper.toDto(transactionRepository.save(transaction));
     }
 }

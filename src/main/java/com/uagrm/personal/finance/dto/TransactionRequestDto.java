@@ -1,6 +1,6 @@
-package com.uagrm.schedule_assignment.finance.dto;
+package com.uagrm.personal.finance.dto;
 
-import com.uagrm.schedule_assignment.finance.entity.TransactionType;
+import com.uagrm.personal.finance.entity.TransactionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

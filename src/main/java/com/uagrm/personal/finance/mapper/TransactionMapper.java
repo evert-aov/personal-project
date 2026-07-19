@@ -1,9 +1,8 @@
-package com.uagrm.schedule_assignment.finance.mapper;
+package com.uagrm.personal.finance.mapper;
 
-import com.uagrm.schedule_assignment.finance.dto.TransactionRequestDto;
-import com.uagrm.schedule_assignment.finance.dto.TransactionResponseDto;
-import com.uagrm.schedule_assignment.finance.entity.Transaction;
-import lombok.RequiredArgsConstructor;
+import com.uagrm.personal.finance.dto.TransactionRequestDto;
+import com.uagrm.personal.finance.dto.TransactionResponseDto;
+import com.uagrm.personal.finance.entity.Transaction;
 import org.springframework.stereotype.Component;
 
 @Component
