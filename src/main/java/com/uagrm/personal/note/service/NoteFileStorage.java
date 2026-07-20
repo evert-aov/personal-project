@@ -1,9 +1,17 @@
 package com.uagrm.personal.note.service;
 
+import com.azure.core.util.BinaryData;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import jakarta.annotation.PostConstruct;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,18 +27,47 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Stores the file backing each note on disk, keyed by "{noteId}.{fileType}".
+ * Stores the file backing each note in Azure Blob Storage (or on disk as fallback),
+ * keyed by "{noteId}.{fileType}".
  * The note's file_type column remains the source of truth for Content-Type/OnlyOffice
- * config; the extension on disk is just for readability. OnlyOffice Document Server
+ * config; the extension is just for readability. OnlyOffice Document Server
  * fetches/edits these through NoteController.
  */
 @Service
 public class NoteFileStorage {
 
-    @Value("${app.storage.notes-dir}")
+    private static final Logger log = LoggerFactory.getLogger(NoteFileStorage.class);
+
+    @Value("${app.storage.notes-dir:./storage/notes}")
     private String storageDir;
 
-    public void createBlankDocument(Long noteId, String fileType) {
+    @Value("${azure.storage.connection-string:}")
+    private String connectionString;
+
+    @Value("${azure.storage.container-name:notes}")
+    private String containerName;
+
+    private BlobContainerClient blobContainerClient;
+
+    @PostConstruct
+    public void init() {
+        if (connectionString != null && !connectionString.trim().isEmpty()) {
+            try {
+                BlobServiceClient serviceClient = new BlobServiceClientBuilder()
+                        .connectionString(connectionString.trim())
+                        .buildClient();
+                this.blobContainerClient = serviceClient.getBlobContainerClient(containerName);
+                this.blobContainerClient.createIfNotExists();
+                log.info("Azure Blob Storage initialized successfully for container '{}'.", containerName);
+            } catch (Exception e) {
+                log.error("Could not initialize Azure Blob Storage: {}", e.getMessage(), e);
+            }
+        } else {
+            log.info("Azure Storage connection string is not configured. Falling back to local disk storage.");
+        }
+    }
+
+    public void createBlankDocument(Long noteId, String title, String fileType) {
         byte[] blank = switch (fileType) {
             case "docx" -> blankDocx();
             case "xlsx" -> blankXlsx();
@@ -39,36 +76,124 @@ public class NoteFileStorage {
             case "pdf" -> blankPdf();
             default -> throw new IllegalArgumentException("Unsupported note file type: " + fileType);
         };
-        write(noteId, fileType, blank);
+        write(noteId, title, fileType, blank);
     }
 
-    public byte[] read(Long noteId, String fileType) {
+    public byte[] read(Long noteId, String title, String fileType) {
+        String filename = blobName(noteId, title, fileType);
+        String legacyFilename = legacyBlobName(noteId, fileType);
+
+        if (blobContainerClient != null) {
+            try {
+                BlobClient blobClient = blobContainerClient.getBlobClient(filename);
+                if (blobClient.exists()) {
+                    return blobClient.downloadContent().toBytes();
+                }
+                BlobClient legacyBlobClient = blobContainerClient.getBlobClient(legacyFilename);
+                if (legacyBlobClient.exists()) {
+                    byte[] data = legacyBlobClient.downloadContent().toBytes();
+                    blobClient.upload(BinaryData.fromBytes(data), true);
+                    legacyBlobClient.delete();
+                    return data;
+                }
+                return blobClient.downloadContent().toBytes();
+            } catch (Exception e) {
+                throw new RuntimeException("Could not read note document " + noteId + " from Azure Storage", e);
+            }
+        }
+
         try {
-            return Files.readAllBytes(pathFor(noteId, fileType));
+            Path currentPath = pathFor(filename);
+            if (Files.exists(currentPath)) {
+                return Files.readAllBytes(currentPath);
+            }
+            Path legacyPath = pathFor(legacyFilename);
+            if (Files.exists(legacyPath)) {
+                byte[] data = Files.readAllBytes(legacyPath);
+                Files.createDirectories(currentPath.getParent());
+                Files.write(currentPath, data);
+                Files.deleteIfExists(legacyPath);
+                return data;
+            }
+            return Files.readAllBytes(currentPath);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read note document " + noteId, e);
         }
     }
 
-    public void write(Long noteId, String fileType, byte[] content) {
+    public void write(Long noteId, String title, String fileType, byte[] content) {
+        String filename = blobName(noteId, title, fileType);
+        if (blobContainerClient != null) {
+            try {
+                BlobClient blobClient = blobContainerClient.getBlobClient(filename);
+                blobClient.upload(BinaryData.fromBytes(content), true);
+                return;
+            } catch (Exception e) {
+                throw new RuntimeException("Could not write note document " + noteId + " to Azure Storage", e);
+            }
+        }
+
         try {
             Files.createDirectories(Path.of(storageDir));
-            Files.write(pathFor(noteId, fileType), content);
+            Files.write(pathFor(filename), content);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not write note document " + noteId, e);
         }
     }
 
-    public void delete(Long noteId, String fileType) {
+    public void delete(Long noteId, String title, String fileType) {
+        String filename = blobName(noteId, title, fileType);
+        String legacyFilename = legacyBlobName(noteId, fileType);
+
+        if (blobContainerClient != null) {
+            try {
+                blobContainerClient.getBlobClient(filename).deleteIfExists();
+                blobContainerClient.getBlobClient(legacyFilename).deleteIfExists();
+                return;
+            } catch (Exception e) {
+                throw new RuntimeException("Could not delete note document " + noteId + " from Azure Storage", e);
+            }
+        }
+
         try {
-            Files.deleteIfExists(pathFor(noteId, fileType));
+            Files.deleteIfExists(pathFor(filename));
+            Files.deleteIfExists(pathFor(legacyFilename));
         } catch (IOException e) {
             throw new UncheckedIOException("Could not delete note document " + noteId, e);
         }
     }
 
-    private Path pathFor(Long noteId, String fileType) {
-        return Path.of(storageDir, noteId + "." + fileType);
+    public void rename(Long noteId, String oldTitle, String newTitle, String fileType) {
+        String oldFilename = blobName(noteId, oldTitle, fileType);
+        String newFilename = blobName(noteId, newTitle, fileType);
+
+        if (oldFilename.equals(newFilename)) {
+            return;
+        }
+
+        try {
+            byte[] content = read(noteId, oldTitle, fileType);
+            write(noteId, newTitle, fileType, content);
+            delete(noteId, oldTitle, fileType);
+        } catch (Exception e) {
+            log.warn("Could not rename note document {} from '{}' to '{}': {}", noteId, oldFilename, newFilename, e.getMessage());
+        }
+    }
+
+    private String blobName(Long noteId, String title, String fileType) {
+        if (title == null || title.isBlank()) {
+            return legacyBlobName(noteId, fileType);
+        }
+        String safeTitle = title.trim().replaceAll("[\\\\/:*?\"<>|]", "_");
+        return noteId + "_" + safeTitle + "." + fileType;
+    }
+
+    private String legacyBlobName(Long noteId, String fileType) {
+        return noteId + "." + fileType;
+    }
+
+    private Path pathFor(String filename) {
+        return Path.of(storageDir, filename);
     }
 
     private byte[] blankDocx() {

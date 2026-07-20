@@ -37,7 +37,7 @@ public class NoteService {
         note.setDocumentKey(UUID.randomUUID().toString());
 
         note = noteRepository.save(note);
-        fileStorage.createBlankDocument(note.getId(), note.getFileType());
+        fileStorage.createBlankDocument(note.getId(), note.getTitle(), note.getFileType());
 
         return noteMapper.toDto(note);
     }
@@ -74,10 +74,16 @@ public class NoteService {
             throw new RuntimeException("You do not have permission to update this record.");
         }
 
+        String oldTitle = note.getTitle();
         note.setTitle(requestDto.title());
         note.setContent(requestDto.content());
 
-        return noteMapper.toDto(noteRepository.save(note));
+        Note savedNote = noteRepository.save(note);
+        if (requestDto.title() != null && !requestDto.title().equals(oldTitle)) {
+            fileStorage.rename(id, oldTitle, requestDto.title(), note.getFileType());
+        }
+
+        return noteMapper.toDto(savedNote);
     }
 
     @Transactional
@@ -89,7 +95,7 @@ public class NoteService {
             throw new RuntimeException("You do not have permission to delete this record.");
 
         noteRepository.deleteById(id);
-        fileStorage.delete(id, note.getFileType());
+        fileStorage.delete(id, note.getTitle(), note.getFileType());
     }
 
     /**
@@ -116,7 +122,7 @@ public class NoteService {
         Note note = noteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Note not found"));
 
-        return new NoteFile(fileStorage.read(id, note.getFileType()), onlyOfficeService.mimeTypeFor(note.getFileType()));
+        return new NoteFile(fileStorage.read(id, note.getTitle(), note.getFileType()), onlyOfficeService.mimeTypeFor(note.getFileType()));
     }
 
     public record NoteFile(byte[] content, String mimeType) {
@@ -147,7 +153,7 @@ public class NoteService {
             Note note = noteRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Note not found"));
 
-            fileStorage.write(id, note.getFileType(), updatedDocument);
+            fileStorage.write(id, note.getTitle(), note.getFileType(), updatedDocument);
             note.setDocumentKey(UUID.randomUUID().toString());
             noteRepository.save(note);
         }
