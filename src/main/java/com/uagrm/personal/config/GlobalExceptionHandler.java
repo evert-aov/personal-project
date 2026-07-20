@@ -20,8 +20,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", "La operación entra en conflicto con datos existentes."));
+                .body(Map.of("message", msg != null ? msg : "La operación entra en conflicto con datos existentes."));
     }
 
     @ExceptionHandler(RuntimeException.class)
