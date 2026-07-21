@@ -80,10 +80,14 @@ public class User implements UserDetails {
 
     public boolean hasRoles(String roleName) {
         if (roles == null) return false;
-        return roles.stream().anyMatch(role -> role.getName().equals(roleName));
+        return roles.stream().anyMatch(role -> role.getName() != null && role.getName().equalsIgnoreCase(roleName));
+    }
+
+    public boolean isSuperuser() {
+        return hasRoles("SUPERUSER");
     }
 
     public boolean isAdmin() {
-        return hasRoles("ADMIN");
+        return hasRoles("ADMIN") || isSuperuser();
     }
 }

@@ -60,37 +60,50 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
+                        // Public endpoints
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/security/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(POST, "/api/security/users").permitAll()
 
-                        // Fetched/invoked by the OnlyOffice Document Server itself, which has no
-                        // app user session -- the callback verifies OnlyOffice's own JWT instead.
+                        // OnlyOffice Document Server callbacks
                         .requestMatchers(HttpMethod.GET, "/api/notes/*/file").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/notes/*/callback").permitAll()
 
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/academic-periods/**",
-                                "/api/classrooms/**",
-                                "/api/schedules/**",
-                                "/api/subjects/**",
-                                "/api/groups/**",
-                                "/api/workshop/**").authenticated()
+                        // Dashboard público accesible para todos
+                        .requestMatchers("/api/dashboard/**").permitAll()
 
+                        // Módulos note y academic: SOLO para SUPERUSER
                         .requestMatchers(
                                 "/api/academic-periods/**",
                                 "/api/classrooms/**",
                                 "/api/schedules/**",
                                 "/api/subjects/**",
                                 "/api/groups/**",
-                                "/api/workshop/**").hasAnyAuthority("ADMIN", "admin", "ROLE_ADMIN")
+                                "/api/notes/**",
+                                "/api/whiteboards/**"
+                        ).hasAnyAuthority("SUPERUSER", "superuser", "ROLE_SUPERUSER")
 
-                        .requestMatchers("/api/finance/client/**").authenticated()
-                        .requestMatchers("/api/finance/transactions/**").authenticated()
+                        // Módulo finance - Endpoints administrativos: ADMIN y SUPERUSER
+                        .requestMatchers("/api/finance/admin/**")
+                                .hasAnyAuthority("ADMIN", "admin", "ROLE_ADMIN", "SUPERUSER", "superuser", "ROLE_SUPERUSER")
+
+                        // Módulo finance - Endpoints de cliente: USER, ADMIN y SUPERUSER
+                        .requestMatchers(
+                                "/api/finance/client/**",
+                                "/api/finance/transactions/**"
+                        ).hasAnyAuthority("USER", "user", "ROLE_USER", "ADMIN", "admin", "ROLE_ADMIN", "SUPERUSER", "superuser", "ROLE_SUPERUSER")
+
+                        // Módulo workshop - Parte pública / cliente (GET): USER, ADMIN y SUPERUSER
+                        .requestMatchers("/api/workshop/**")
+                                .hasAnyAuthority("USER", "user", "ROLE_USER", "ADMIN", "admin", "ROLE_ADMIN", "SUPERUSER", "superuser", "ROLE_SUPERUSER")
+
+                        // Módulo workshop - Endpoints completos (escritura): ADMIN y SUPERUSER
+                        .requestMatchers("/api/workshop/**")
+                                .hasAnyAuthority("ADMIN", "admin", "ROLE_ADMIN", "SUPERUSER", "superuser", "ROLE_SUPERUSER")
+
+                        // Perfil de usuario y otros endpoints autenticados
                         .requestMatchers("/api/profile/**").authenticated()
-                        .requestMatchers("/api/notes/**").authenticated()
-                        .requestMatchers("/api/whiteboards/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
